@@ -1,0 +1,13 @@
+#+TITLE: Hexstrings to binary file
+
+* Short Description
+
+This is a small program to convert hexstrings saved as plain text files into a binary format.
+
+The code is not optimized, nor is it meant to be perfect. It is mainly used as learning opportunity and for testing.
+
+Use it at your own risk.
+
+* Credits
+
+Proudly created without AI.
