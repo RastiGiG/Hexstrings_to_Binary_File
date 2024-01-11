@@ -9,6 +9,7 @@
 #########################################
 ### Compiled binary
 hexstrings_to_binary
+bin/
 
 #########################################
 # Prerequisites
@@ -20,6 +21,7 @@ hexstrings_to_binary
 *.ko
 *.obj
 *.elf
+obj/
 
 #########################################
 # Linker output
@@ -38,6 +40,7 @@ hexstrings_to_binary
 *.a
 *.la
 *.lo
+lib/
 
 #########################################
 # Shared objects (inc. Windows DLLs)
