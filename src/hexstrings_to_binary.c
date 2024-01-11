@@ -1,5 +1,5 @@
 /**************************************************************************
- * Hexstrings to Binary File V1.0
+ * HEXSTRINGS TO BINARY FILE V1.0
  * ------------------------------------------------------------------------
  * Copyright (c) 2023-2024 RastiGiG <randomly.ventilates@simplelogin.co>
  * 
