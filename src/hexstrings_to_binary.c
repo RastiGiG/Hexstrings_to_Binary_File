@@ -1,8 +1,8 @@
 /**************************************************************************
- * HEXSTRINGS TO BINARY FILE V1.0
+ * HEXSTRINGS TO BINARY FILE V1.1
  * ------------------------------------------------------------------------
  * Copyright (c) 2023-2024 RastiGiG <randomly.ventilates@simplelogin.co>
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
  * arising from the use of this software.
@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -37,8 +38,8 @@
 /* Macros
  *
  * */
-#define MAX_BUFF_SIZE                1024 * 4 
-#define NUMBER_OF_CHARS_PER_DIGITS   4 
+#define MAX_BUFF_SIZE                1024 * 4
+#define NUMBER_OF_CHARS_PER_DIGITS   4
 #define BINARY_WRITE                "wb"
 
 
@@ -55,6 +56,17 @@ typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 
+/*  */
+bool yes_no_questionaire(void) {
+    char answer;
+    printf("Would you like to continue? Enter Y or N: ");
+    while (scanf(" %c", &answer) == 1 && ((answer == 'y') || answer == 'Y'))
+    {
+    	printf("Answer is %c\n", answer);
+		return true;
+    }
+    return false;
+}
 
 /* Convert hexadecimal chars into integers
  *
@@ -76,7 +88,7 @@ u8 hex_to_int(char hex_digit) {
     return decimal;
 }
 
-/* Concatenate to digits 
+/* Concatenate to digits
  *
  * 0x0F 0x0F => 0xFF
  * Input file is interpreted in text format, so each digits would be stored
@@ -86,30 +98,33 @@ u8 hex_to_int(char hex_digit) {
 u16 concat_digits(char *hex_digits) {
     u16 output_number = 0;
     for (int i = 0; i < NUMBER_OF_CHARS_PER_DIGITS; i++) {
-        if ((hex_digits[i] >= 'A' && hex_digits[i] <= 'F') 
-            || (hex_digits[i] >= 'a' && hex_digits[i] <= 'f') 
+        if ((hex_digits[i] >= 'A' && hex_digits[i] <= 'F')
+            || (hex_digits[i] >= 'a' && hex_digits[i] <= 'f')
             || (hex_digits[i] > '0' && hex_digits[i] <= '9')) {
             output_number |= hex_to_int(hex_digits[i]) << (12 - i*4);
-        } 
+        }
     }
     return output_number;
 }
 
 
 /* Handle file opening and writing
- * 
+ *
  * */
 usize file_open_and_write (char *filepath, void * buffer, usize size){
     // Check file exists
     if (access(filepath, F_OK) == 0){
-        fprintf(stderr, "[ERROR]: file '%s' already exists! Delete/move it or choose a different filename.", filepath);
-        exit(1);
+        fprintf(stderr, "[WARNING]: file '%s' already exists!\n", filepath);
+	    if(!yes_no_questionaire()) {
+            fprintf(stderr, "[ERROR]: Delete/move it or choose a different filename.\n");
+            exit(1);
+		}
     }
 
     // Open file and check writability, 'wb' -> 'write binary'
     FILE *file = fopen(filepath, BINARY_WRITE);
     if(file == NULL){
-        fprintf(stderr, "[ERROR]: File '%s' cannot be opened! Do you have write permissions?", filepath);
+        fprintf(stderr, "[ERROR]: File '%s' cannot be opened! Do you have write permissions?\n", filepath);
         exit(1);
     }
 
@@ -132,7 +147,7 @@ usize file_open_and_write (char *filepath, void * buffer, usize size){
 }
 
 /* Handle file opening and reading
- * 
+ *
  * */
 usize file_open_and_read (char *filepath, char* buffer, usize size){
     // Check file exists
@@ -175,13 +190,16 @@ usize file_open_and_read (char *filepath, char* buffer, usize size){
  * */
 int main(int argc, char *argv[])
 {
-    if (argc < 3){
+	char write_filepath[60] = "data/output.bin";
+	if ((argc > 3) || (argc < 1)){
         fprintf(stderr, "Usage: %s <input file> <output file>\n", argv[0]);
-        exit(0);
-    }
+        exit(1);
+	} else if (argc == 3) {
+        /* char* destination = argv[2]; */
+	    strcpy(write_filepath, argv[2]);
+	}
 
-    char *read_filepath = argv[1];
-    char *write_filepath = argv[2];
+    char* read_filepath = argv[1];
     char* input_buffer = (char*) calloc(MAX_BUFF_SIZE, sizeof(char));
     u16* output_buffer = (u16*) calloc(MAX_BUFF_SIZE, sizeof(u8));
 
@@ -220,16 +238,16 @@ int main(int argc, char *argv[])
         }
     }
     // get actual number bytes by removing prefixes from count
-    file_size -= number_of_hex_prefixes;  
+    file_size -= number_of_hex_prefixes;
 
     // Write the input file to binary, half file size because of concatenation
     file_size = file_open_and_write(write_filepath, output_buffer, file_size/2);
 
     printf("Sucessfully wrote file '%s' of size '%zu'\n", write_filepath, file_size);
-    
+
     free(input_buffer);
-    //free(output_buffer);
+    free(output_buffer);
     input_buffer = NULL;
-    //output_buffer = NULL;
+    output_buffer = NULL;
     return EXIT_SUCCESS;
 }
